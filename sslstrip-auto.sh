@@ -8,8 +8,6 @@ while [ $sortie -eq "0" ]
 		clear
 		ctrl_sslstrip=$(ps aux | grep -i "sslstrip " | head -n 1 | grep -vi "grep" |awk '{print $2}')
 		ctrl_arpspoof=$(ps aux | grep -i "arpspoof" | head -n 1 | grep -vi "grep" |awk '{print $2}')
-#		echo "sslstrip: $ctrl_sslstrip"
-#		echo "arpspoof: $ctrl_arpspoof"
 		echo "Statut des différents modules:"
 		echo " "
 		if [ -z $ctrl_sslstrip ] && [ -z $ctrl_arpspoof ] 
