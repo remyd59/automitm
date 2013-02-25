@@ -161,6 +161,8 @@ while [ $sortie -eq "0" ]
 					then
 						#kill $ctrl_sslstrip
 						#kill $ctrl_arpspoof
+						killall sslstrip
+						killall arpspoof
 						iptables -t nat -F
 					elif  [ -z $ctrl_sslstrip ]
 						then
