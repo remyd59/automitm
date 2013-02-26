@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 clear
 sortie="0"
 #set -eux
