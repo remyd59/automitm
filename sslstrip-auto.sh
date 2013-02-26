@@ -2,44 +2,130 @@
 clear
 sortie="0"
 #set -eux
+
+#--------------Début verification que l'utilisateur est root-------------
+check_root=$(id -u)
+if [ $check_root -eq 0 ]
+	then
+		echo "user root ok"
+	else
+		echo "Veuillez lancé le script avec les droits root"
+		sleep 3
+		exit
+fi
+#---------------Fin verification utilisateur root------------------------
+
+#---------------Fonctions vérification des réponses oui-non-------------
+answer_check() {
+	force=0
+	while [ $force -eq 0 ]
+		do
+#			clear
+			echo "La saisie est incorrecte, veuillez entre oui ou non"
+			read rep
+				if [ "x$rep" != "xoui" ] || [ "x$rep" != "xnon" ]
+					then
+						clear
+					else
+						force=1
+				fi
+		done
+}
+			
+
+
+#----------------Verification des package installé-----------------------
+#sslstrip
+echo "Vérification des packages:"
+paquet_ssl=$(aptitude show sslstrip | grep State | awk '{print $2}')
+if [ "X$paquet_ssl" != "Xinstalled" ]
+	then 
+		echo "sslstrip doit-être installé, voulez vous continuer (oui-non)?"
+		read rep
+		if [ "x$rep" = "xoui" ]
+			then
+				apt-get install sslstrip
+			elif [ "x$rep" = "xnon" ]
+				then
+					clear
+					echo "Le programme va s'arrêter"
+					sleep 3
+					exit	
+			else
+				answer_check
+				sslstrip
+				echo "sslstrip ok"
+				sleep 2
+		fi
+	else
+		echo "sslstrip installé"
+fi
+#arpspoof
+paquet_dsniff=$(aptitude show dsniff | grep State | awk '{print $2}')
+
+if [ "X$paquet_dsniff" != "Xinstalled" ]
+	then 
+		echo "arpspoof doit-être installé, voulez vous continuer (oui-non)?"
+		read rep
+		if [ "x$rep" = "xoui" ]
+			then
+				apt-get install dsniff
+			elif [ "x$rep" == "xnon" ]
+				then
+					clear
+					echo "Le programme va s'arrêter"
+					sleep 3
+					exit
+			else
+				answer_check
+			
+		fi
+	else
+		echo "arpspoof installé"
+		sleep 2
+fi
+#------------------------Fin de la verification des package necessaire---------------------- 
+
+
+
 iptables -t nat -F
+#-----------------------Déclaration des fonctions------------------------------------------
+status() {
+	ctrl_sslstrip=$(ps aux | grep -i "sslstrip " | head -n 1 | grep -vi "grep" |awk '{print $2}')	
+	if [ -z $ctrl_sslstrip ]
+		then
+			sslstat="sslstrip OFF"
+		else
+			sslstat="sslstrip ON PID: $ctrl_sslstrip" 
+	fi
+	
+	ctrl_arpspoof=$(ps aux | grep -i "arpspoof" | head -n 10 | grep -vi "grep"  | awk '{print $2}')
+	if [ -z $ctrl_arpspoof ]
+		then 
+			arpstat="arpspoof OFF"
+		else
+			arpstat="arpspoof ON PID: $ctrl_arpspoof"
+	fi
+	ctrl_iptable=$(iptables -t nat -L | grep "REDIRECT" | grep "dpt:http" | awk '{print $1}')
+	if [ -z $ctrl_iptable ]
+		then
+			iptablestat="iptables OFF"
+		else
+			iptablestat="iptables ON"
+	fi
+	clear		
+	echo $sslstat
+	echo $arpstat
+	echo $iptablestat
+		
+
+}
+
+#----------------------------------Check terminé début du programme-----------------------------------
 while [ $sortie -eq "0" ]
 	do
-		clear
-		ctrl_sslstrip=$(ps aux | grep -i "sslstrip " | head -n 1 | grep -vi "grep" |awk '{print $2}')
-		ctrl_arpspoof=$(ps aux | grep -i "arpspoof" | head -n 1 | grep -vi "grep" |awk '{print $2}')
-		echo "Statut des différents modules:"
-		echo " "
-		if [ -z $ctrl_sslstrip ] && [ -z $ctrl_arpspoof ] 
-			then 
-				echo "#-----------------------#"
-				echo "|\033[0;31mPas d'attaque en cours\033[0m |"
-				echo "|arpspoof: \033[0;31mNOK.\033[0m         | $ctrl_arpspoof"
-				echo "|sslstrip: \033[0;31mNOK.\033[0m         | $ctrl_sslstrip" 
-				echo "#-----------------------#"
-			elif  [ -z $ctrl_sslstrip ]
-					then
-						echo "#-----------------------#"
-						echo "|\033[0;31mPas d'attaque en cours\033[0m |" 
-						echo "|arpspoof: \033[0;32mOK.\033[0m          | $ctrl_arpspoof"    
-						echo "|sslstrip: \033[0;31mNOK.\033[0m	        | $ctrl_sslstrip"
-						echo "#-----------------------#"
-						
-										
-			elif [ -z $ctrl_arpspoof ]
-					then
-						echo "#-----------------------#"
-						echo "|\033[0;31mPas d'attaque en cours\033[0m  |"
-						echo "|arpspoof: \033[0;31mNOK.\033[0m          | $ctrl_arpspoof"                                         
-						echo "|sslstrip: \033[0;32mOK.\033[0m          | $ctrl_sslstrip"
-						echo "#-----------------------#"
-			else
-				echo "#-----------------------#"
-				echo "|\033[0;32mAttaque en cours\033[0m      |"
-				echo "|arpspoof: \033[0;32mOK.\033[0m         | $ctrl_arpspoof"
-				echo "|sslstrip: \033[0;32mOK.\033[0m         | $ctrl_sslstrip"
-				 echo "#-----------------------#"
-		fi                
+	#	clear        
+		status
 		echo " "
 		echo " "
 		echo "===========================MENU==========================="
