@@ -45,10 +45,6 @@ if [ `echo $?` -ne 0 ]
 		
 fi
 #------------------------Fin de la verification des package necessaire---------------------- 
-
-
-
-iptables -t nat -F
 #-----------------------Déclaration des fonctions------------------------------------------
 status() {
 	ctrl_sslstrip=$(ps aux | grep -i "sslstrip " | head -n 1 | grep -vi "grep" |awk '{print $2}')	
@@ -89,8 +85,14 @@ status() {
 
 
 iptab(){
-iptr=$(iptables -t nat -L --line-numbers| grep REDIRECT | grep "$1")
-iptd=$(iptables -t nat -L --line-numbers| grep REDIRECT | grep "$1" | awk '{print $1}')
+if [ -z $1 ] 
+	then
+		echo " " 
+		echo "Redirection générées par le programme: "
+	else
+		iptr=$(iptables -t nat -L --line-numbers| grep REDIRECT | grep -w "$1")
+		iptd=$(iptables -t nat -L --line-numbers| grep REDIRECT | grep -w "$1" | awk '{print $1}')
+fi
 }
 
 
@@ -103,7 +105,9 @@ ctrl_arpspoof=$(ps aux | grep -i "arpspoof" | head -n 1 | grep -vi "grep" |awk '
 sortie=0
 while [ $sortie -eq "0" ]
 	do      
+		echo " "
 		status
+		echo " "
 		iptab
 		echo $iptr
 		echo " "
@@ -162,6 +166,7 @@ while [ $sortie -eq "0" ]
 						then 
 							clear
 							killall arpspoof
+							echo "supression $iptd"
 							iptables -t nat -D PREROUTING $iptd
 							echo "arpspoof: arrêt en cours, veuillez patienter"
 					 		sleep 2
@@ -195,7 +200,7 @@ while [ $sortie -eq "0" ]
 				;;
 			"3")
 				clear
-				iptables -t nat -D PREROUTING $iptd
+				iptables -t nat -D PREROUTING $iptd 2> /dev/null
 				killall arpspoof
 				killall sslstrip
 				echo "Le programme est en cours d'arrêt"
