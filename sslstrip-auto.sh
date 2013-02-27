@@ -36,9 +36,11 @@ answer_check() {
 
 #----------------Verification des package installé-----------------------
 #sslstrip
+test=`echo $?`
 echo "Vérification des packages:"
-paquet_ssl=$(aptitude show sslstrip | grep State | awk '{print $2}')
-if [ "X$paquet_ssl" != "Xinstalled" ]
+paquet_ssl=$(aptitude show sslstrip)
+#paquet_sslc=$(aptitude show sslstrip | grep install | awk '{print $2}' | head -n 1)
+if [ "$test" -ne "0" ]
 	then 
 		echo "sslstrip doit-être installé, voulez vous continuer (oui-non)?"
 		read rep
@@ -61,9 +63,9 @@ if [ "X$paquet_ssl" != "Xinstalled" ]
 		echo "sslstrip installé"
 fi
 #arpspoof
-paquet_dsniff=$(aptitude show dsniff | grep State | awk '{print $2}')
+paquet_dsniff=$(aptitude show dsniff)
 
-if [ "X$paquet_dsniff" != "Xinstalled" ]
+if [ "$test" -ne "0" ]
 	then 
 		echo "arpspoof doit-être installé, voulez vous continuer (oui-non)?"
 		read rep
