@@ -1,3 +1,3 @@
 automitm
 ========
-This script has been created to allow users to make automatic mitm attack based on sslstrip and ARP spoof.
+This script has been created to allow users to make automatic mitm attack (for testing) based on sslstrip, ARP spoof and Mac changer.
