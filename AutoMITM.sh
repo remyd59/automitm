@@ -200,7 +200,7 @@ while [ $sortie -eq "0" ]
 		echo " "
 		resume $vict $passerelle
 		echo " "
-		echo "===========================MENU==========================="
+		echo "=================Remy AutoMITM MENU================="
 		echo "1. Lancer l'attaque MITM"
 		echo "2. Arrêter les process en cours"
 		echo "3. Fermer le programme"
