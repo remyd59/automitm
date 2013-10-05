@@ -160,7 +160,7 @@ checkboucle=0
 while [ $checkboucle -eq "0" ]
 	do
 		date=`date | cut -d "(" -f 1`
-		checkping=`ping -w 1 -c 2 $1`
+		checkping=`ping -c 1 $1`
 		if [ `echo $?` -eq "1" ]
 			then
 				clear
