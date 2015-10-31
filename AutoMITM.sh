@@ -367,8 +367,8 @@ while [ $sortie -eq "0" ]
                						 checkgm=0
 						fi
 
-					outlook_login=$(grep -a "login=" $chemin | grep -a "&passwd=" | sed 's/.*login=\([^%]*\).*/\1/')
-					outlook_pass=$(grep -a "login=" $chemin | grep -a "&passwd=" | sed 's/.*passwd=\([^&]*\).*/\1/')
+					outlook_login=$(grep -a "loginfmt=" $chemin | grep -a "&passwd=" | sed 's/.*login=\([^%]*\).*/\1/')
+					outlook_pass=$(grep -a "loginfmt=" $chemin | grep -a "&passwd=" | sed 's/.*passwd=\([^&]*\).*/\1/')
 
 					if [ -z $outlook_login ] || [ -z $outlook_pass ]
 					        then
